@@ -1,0 +1,8 @@
+server:
+  host: localhost
+  port: 3344
+  
+location:
+  feedback: ./data/feedback.json
+  rapport: ./data/rapport.json
+  
