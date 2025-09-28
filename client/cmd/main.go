@@ -3,11 +3,11 @@ package main
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 	"ia-client/pkg/feedback"
 	"ia-client/pkg/rapport"
 	"ia-client/pkg/services"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"strconv"
@@ -55,38 +55,43 @@ func main() {
 
 func newclient(cfg services.ServerConfig) (*http.Client, error) {
 
-	client_cert := cfg.CertPath + "/client_cert.pem" // Le certificat du client (public)
-	client_key := cfg.CertPath + "/client_key.pem"   // La clé privée du client
-	ca_cert := cfg.CertPath + "/ca_cert.pem"         // Le certificat de l'autorité de certification (CA) du serveur
+	clientCertPath := cfg.CertPath + "/client.crt" // Le certificat du client (public)
+	clientKeyPath := cfg.CertPath + "/client.key"  // La clé privée du client
+	caCertPath := cfg.CertPath + "/ca.crt"         // Le certificat de l'autorité de certification (CA) du serveur
 
-	cert, err := tls.LoadX509KeyPair(client_cert, client_key)
+	// 1. Charger la clé et le certificat du client
+	cert, err := tls.LoadX509KeyPair(clientCertPath, clientKeyPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to load client cert: %v", err)
+		log.Fatalf("❌ Échec du chargement du certificat client: %v", err)
 	}
+	log.Println("✅ Certificat client chargé avec succès.")
 
+	// 2. Préparer le pool de certificats CA du serveur (RootCAs)
 	ca := x509.NewCertPool()
-
-	caBytes, err := os.ReadFile(ca_cert)
+	caBytes, err := os.ReadFile(caCertPath)
 	if err != nil {
-		return nil, fmt.Errorf("failed to read ca cert %q: %v", ca_cert, err)
+		log.Fatalf("❌ Échec de la lecture du certificat CA serveur %q: %v", caCertPath, err)
 	}
 	if ok := ca.AppendCertsFromPEM(caBytes); !ok {
-		return nil, fmt.Errorf("failed to parse %q", ca_cert)
+		log.Fatalf("❌ Échec du parsing du certificat CA serveur %q", caCertPath)
 	}
+	log.Println("✅ CA du serveur chargée pour la vérification.")
 
+	// 3. Créer la configuration TLS
 	tlsConfig := &tls.Config{
-		ServerName:   "x.test.example.com",
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      ca,
+		ServerName:   "localhost",             // Doit correspondre au CN/SAN du 'server_cert.pem' du serveur de test
+		Certificates: []tls.Certificate{cert}, // Certificat du client pour le mTLS
+		RootCAs:      ca,                      // CA pour vérifier le certificat du serveur
+		MinVersion:   tls.VersionTLS12,
 	}
 
-	// 4. Créer un transport HTTP personnalisé
+	// 4. Créer un transport HTTP personnalisé avec le DialContext corrigé
 	transport := &http.Transport{
 		TLSClientConfig: tlsConfig,
-		// Définir des délais d'attente pour le transport est une bonne pratique
-		// DialContext: (&net.Dialer{
-		// 	Timeout: 5 * time.Second,
-		// }).DialContext,
+		// Utilisation de net.Dialer pour la correction de l'erreur "http.Dialer est inconnu"
+		DialContext: (&net.Dialer{
+			Timeout: 5 * time.Second,
+		}).DialContext,
 		TLSHandshakeTimeout: 5 * time.Second,
 	}
 

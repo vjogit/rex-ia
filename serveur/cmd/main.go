@@ -1,8 +1,6 @@
 package main
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"log"
 	"net/http"
@@ -65,35 +63,9 @@ func main() {
 		})
 	})
 
-	log.Printf("server starting on port %d...\n", cfg.Server.Port)
-
-	cert, err := tls.LoadX509KeyPair(server_cert, server_key)
-	if err != nil {
-		log.Fatalf("failed to load key pair: %s", err)
-	}
-
-	ca := x509.NewCertPool()
-	caFilePath := client_ca_cert
-	caBytes, err := os.ReadFile(caFilePath)
-	if err != nil {
-		log.Fatalf("failed to read ca cert %q: %v", caFilePath, err)
-	}
-	if ok := ca.AppendCertsFromPEM(caBytes); !ok {
-		log.Fatalf("failed to parse %q", caFilePath)
-	}
-
-	tlsConfig := &tls.Config{
-		ClientAuth:   tls.RequireAndVerifyClientCert,
-		Certificates: []tls.Certificate{cert},
-		ClientCAs:    ca,
-	}
-
-	server := &http.Server{
-		Addr:      fmt.Sprintf(":%d", cfg.Server.Port),
-		Handler:   r,
-		TLSConfig: tlsConfig,
-	}
-
-	log.Printf("Serveur démarré sur le port %d (mTLS)", cfg.Server.Port)
-	log.Fatal(server.ListenAndServeTLS(server_cert, server_key))
+	log.Printf("Serveur démarré sur le port %d (HTTP)", cfg.Server.Port)
+	log.Fatal(http.ListenAndServe(
+		fmt.Sprintf(":%d", cfg.Server.Port),
+		r,
+	))
 }

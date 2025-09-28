@@ -1,7 +1,8 @@
 server:
   host: https://localhost
-  port: 3344
-  certPath : /home/vjo/projets/rex/rex-ia/testdata/x509
+  port: 443
+ # port : 8443
+  certPath : /home/vjo/projets/rex/rex-ia/testdata/x509/mtls_certs
 
 database:
   host: localhost
