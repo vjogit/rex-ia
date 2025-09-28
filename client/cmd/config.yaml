@@ -1,5 +1,5 @@
 server:
-  host: https://localhost
+  host: https://127.0.0.1
   port: 443
  # port : 8443
   certPath : /home/vjo/projets/rex/rex-ia/testdata/x509/mtls_certs
