@@ -1,7 +1,6 @@
 server:
-  host: https://127.0.0.1
+  host: https://159.31.247.10
   port: 443
- # port : 8443
   certPath : /home/vjo/projets/rex/rex-ia/testdata/x509/mtls_certs
 
 database:
@@ -10,6 +9,8 @@ database:
   user: postgres
   password: root
   name: db_rex  
+
+pullIntervalMinutes: 360  # 6 hours
 
   
 

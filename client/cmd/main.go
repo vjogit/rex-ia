@@ -48,7 +48,7 @@ func main() {
 		if err != nil {
 			log.Println("Erreur GetRapport:", err)
 		}
-		time.Sleep(2 * time.Second)
+		time.Sleep(time.Duration(cfg.PullIntervalMinutes) * time.Minute)
 	}
 
 }

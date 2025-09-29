@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"log"
 	"sync"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -25,7 +26,7 @@ func NewPG(cfg *DatabaseConfig) (_ *Postgres, err error) {
 		db, err := pgxpool.New(context.Background(), dsn)
 
 		if err != nil {
-			err = fmt.Errorf("unable to create connection pool: %v", err)
+			log.Fatal(fmt.Errorf("unable to create connection pool: %v", err))
 		}
 		pgInstance = &Postgres{db}
 	})

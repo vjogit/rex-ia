@@ -7,8 +7,9 @@ import (
 )
 
 type Config struct {
-	Database DatabaseConfig `yaml:"database"`
-	Server   ServerConfig   `yaml:"server"`
+	Database            DatabaseConfig `yaml:"database"`
+	Server              ServerConfig   `yaml:"server"`
+	PullIntervalMinutes int            `yaml:"pullIntervalMinutes"`
 }
 
 type DatabaseConfig struct {
